@@ -858,13 +858,13 @@ class Counties(PlaceEnum):
             three_letter_prefix_ranges=["VXA-VYN"]
         )
     )
-    SAGAUCHE = County(
+    SAGUACHE = County(
         name="Saguache",
         abbreviations=PlaceAbbreviations(
             three_letter="SAG",
             five_letter="SAGCH",
             seven_letter="SAGCHE",
-            fourteen_letter="SAGAUCHE"
+            fourteen_letter="SAGUACHE"
         ),
         zone=Zones.FRONTIER,
         api_code="109",
