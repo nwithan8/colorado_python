@@ -1,9 +1,12 @@
 from typing import Any
 
-from colorado._base import Place, PlaceEnum, PlaceAbbreviations
+from colorado.airports import Airports
+from colorado.base.named_location import NamedLocationAbbreviations
+from colorado.base.populated_place import PopulatedPlace, PopulatedPlaceEnum
+from colorado.counties import Counties
 
 
-class UnincorporatedArea(Place):
+class UnincorporatedArea(PopulatedPlace):
     """
     Represents an unincorporated area in the state of Colorado.
     """
@@ -12,25 +15,20 @@ class UnincorporatedArea(Place):
         super().__init__(**data)
 
 
-class UnincorporatedAreas(PlaceEnum):
+class UnincorporatedAreas(PopulatedPlaceEnum):
     """
     An enumeration of unincorporated areas in the state of Colorado.
     """
-    HIGHLANDS_RANCH = UnincorporatedArea(
-        name="Highlands Ranch",
-        abbreviations=PlaceAbbreviations(
-            three_letter="HLD",
-            five_letter="HGHLN",
-            seven_letter="HGHLND",
-            fourteen_letter="HIGHLANDSRANCH"
-        )
-    )
     HENDERSON = UnincorporatedArea(
         name="Henderson",
-        abbreviations=PlaceAbbreviations(
+        abbreviations=NamedLocationAbbreviations(
             three_letter="HND",
             five_letter="HENDR",
             seven_letter="HENDRSN",
             fourteen_letter="HENDERSON"
-        )
+        ),
+        latitude=39.92054695153314,
+        longitude=-104.86581850143858,
+        counties=[Counties.ADAMS],
+        nearest_airport=Airports.DENVER
     )
