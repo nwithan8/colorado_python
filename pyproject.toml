@@ -3,22 +3,6 @@ requires = [
     "setuptools>=61",
     "wheel",
     "build",
-    "black",
-    "flake8",
-    "isort",
-    "pytest-cov==3.*",
-    "pytest-vcr==1.*",
-    "pytest==7.*",
-    "types-requests",
-    "types-urllib3",
-    "vcrpy==4.*",
-    "pre-commit",
-    "sphinx",
-    "sphinx_rtd_theme",
-    "sphinx-jsonschema",
-    "sphinx-pydantic",
-    "sphinx_autodoc_typehints"
-
 ]
 build-backend = "setuptools.build_meta"
 
@@ -62,6 +46,26 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/nwithan8/colorado_python"
 Download = "https://github.com/nwithan8/colorado_python/archive/refs/tags/0.1.0.tar.gz"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "isort",
+    "pytest-cov==3.*",
+    "pytest-vcr==1.*",
+    "pytest==7.*",
+    "types-requests",
+    "types-urllib3",
+    "vcrpy==4.*",
+    "pre-commit",
+    "sphinx",
+    "sphinx_rtd_theme",
+    "sphinx-jsonschema",
+    "sphinx-pydantic",
+    "sphinx_autodoc_typehints",
+    "datamodel-code-generator",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
