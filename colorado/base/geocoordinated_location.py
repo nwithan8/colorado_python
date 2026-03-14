@@ -20,11 +20,6 @@ class GeocoordinatedLocation(BaseModel):
     The longitude of the location.
     """
 
-    counties: list[Counties]
-    """
-    A list of counties containing this location.
-    """
-
     nearest_airport: Airports
     """
     The nearest airport to this location.
@@ -59,15 +54,6 @@ class GeocoordinatedLocationEnum(enum.Enum):
         :rtype: float
         """
         return self._location.longitude
-
-    @property
-    def counties(self) -> list[Counties]:
-        """
-        A list of counties containing this location.
-        :return: A list of counties containing this location.
-        :rtype: list[Counties]
-        """
-        return self._location.counties
 
     @property
     def nearest_airport(self) -> Airports:
