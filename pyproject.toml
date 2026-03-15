@@ -71,7 +71,8 @@ dev = [
 where = ["."]
 exclude = [
     "tests",
-    "examples"
+    "examples",
+    "code_writer*",
 ]
 
 [tool.setuptools]
