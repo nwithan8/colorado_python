@@ -1,10 +1,11 @@
 from typing import Any
 
 from colorado.base.with_abbreviations import WithAbbreviations, WithAbbreviationsEnum, Abbreviations
+from colorado.base.with_coordinates import WithCoordinatesEnum, WithCoordinates
 from colorado.base.with_name import WithName, WithNameEnum
 
 
-class Airport(WithName, WithAbbreviations):
+class Airport(WithName, WithAbbreviations, WithCoordinates):
     """
     Represents a major or regional airport in the state of Colorado.
     """
@@ -18,7 +19,7 @@ class Airport(WithName, WithAbbreviations):
         super().__init__(**data)
 
 
-class Airports(WithNameEnum, WithAbbreviationsEnum):
+class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     """
     An enumeration of all major and regional airports in the state of Colorado.
     """
