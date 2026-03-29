@@ -1,8 +1,49 @@
-from typing import Any
+import json
+from pathlib import Path
+from typing import Any, TypeAlias, Tuple
 
 from colorado.base.with_abbreviations import WithAbbreviations, WithAbbreviationsEnum, Abbreviations
+from colorado.base.with_borders import WithBorders, WithBordersEnum
 from colorado.base.with_coordinates import WithCoordinatesEnum, WithCoordinates
 from colorado.base.with_name import WithName, WithNameEnum
+from colorado.internal.geojson import to_polygon_rings, point_in_polygon, PolygonRings
+
+AirportRegionPolygonIndex: TypeAlias = dict[str, list[PolygonRings]]  # geojson_id -> polygons
+AIRPORT_REGION_POLYGON_INDEX: AirportRegionPolygonIndex = {}
+
+def _get_airport_region_polygon_index() -> AirportRegionPolygonIndex:
+    global AIRPORT_REGION_POLYGON_INDEX
+    if not AIRPORT_REGION_POLYGON_INDEX:
+        geojson_path = Path(__file__).resolve().parent / "COLORADO_AIRPORT_REGION_BORDERS.geojson"
+        with geojson_path.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        features: list[dict] = data.get("features", [])
+        for feature in features:
+            props: dict = feature.get("properties", {})
+            geometry: dict = feature.get("geometry", {})
+            geojson_id: int = feature.get("id")
+
+            geom_type: str = geometry.get("type")
+            coords: list[Tuple[float, float]] = geometry.get("coordinates")
+
+            polygons: list[PolygonRings] = []
+            if geom_type == "Polygon":
+                polygon = to_polygon_rings(coords)
+                if polygon:
+                    polygons.append(polygon)
+            elif geom_type == "MultiPolygon":
+                for raw_polygon in coords or []:
+                    polygon = to_polygon_rings(raw_polygon)
+                    if polygon:
+                        polygons.append(polygon)
+            else:
+                continue
+
+            if polygons:
+                AIRPORT_REGION_POLYGON_INDEX.setdefault(geojson_id, []).extend(polygons)
+
+    return AIRPORT_REGION_POLYGON_INDEX
 
 
 class Airport(WithName, WithAbbreviations, WithCoordinates):
@@ -15,17 +56,28 @@ class Airport(WithName, WithAbbreviations, WithCoordinates):
     The IATA code used to identify this airport nationally.
     """
 
+    geojson_id: int
+    """
+    The ID of the airport in the GeoJSON data containing airport region borders.
+    """
+
     def __init__(self, /, **data: Any):
         super().__init__(**data)
 
+    def coordinates_within_borders(self, latitude: float, longitude: float) -> bool:
+        airport_region_polygon_index = _get_airport_region_polygon_index()
+        airport_region_polygons = airport_region_polygon_index.get(int(self.geojson_id), [])
+        return any(point_in_polygon(latitude, longitude, polygon) for polygon in airport_region_polygons)
 
-class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
+
+class Airports(WithNameEnum, WithAbbreviationsEnum, WithBordersEnum, WithCoordinatesEnum):
     """
     An enumeration of all major and regional airports in the state of Colorado.
     """
     ASPEN_PITKIN = Airport(
         name="Aspen-Pitkin County/Sardy Field",
         iata_code="ASE",
+        geojson_id=1,
         abbreviations=Abbreviations(
             three_letter="ASE",
             five_letter="ASE",
@@ -38,6 +90,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     COLORADO_SPRINGS = Airport(
         name="City Of Colorado Springs Municipal Airport",
         iata_code="COS",
+        geojson_id=3,
         abbreviations=Abbreviations(
             three_letter="COS",
             five_letter="COS",
@@ -50,6 +103,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     CORTEZ = Airport(
         name="Cortez Municipal Airport",
         iata_code="CEZ",
+        geojson_id=2,
         abbreviations=Abbreviations(
             three_letter="CEZ",
             five_letter="CEZ",
@@ -62,6 +116,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     DENVER = Airport(
         name="Denver International Airport",
         iata_code="DEN",
+        geojson_id=4,
         abbreviations=Abbreviations(
             three_letter="DEN",
             five_letter="DEN",
@@ -74,6 +129,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     DURANGO_LA_PLATA = Airport(
         name="Durango-La Plata County Airport",
         iata_code="DRO",
+        geojson_id=5,
         abbreviations=Abbreviations(
             three_letter="DRO",
             five_letter="DRO",
@@ -86,6 +142,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     EAGLE = Airport(
         name="Eagle County Regional Airport",
         iata_code="EGE",
+        geojson_id=6,
         abbreviations=Abbreviations(
             three_letter="EGE",
             five_letter="EGE",
@@ -98,6 +155,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     GRAND_JUNCTION = Airport(
         name="Grand Junction Regional Airport",
         iata_code="GJT",
+        geojson_id=8,
         abbreviations=Abbreviations(
             three_letter="GJT",
             five_letter="GJT",
@@ -110,6 +168,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     GUNNISON_CRESTED_BUTTE = Airport(
         name="Gunnison-Crested Butte Regional Airport",
         iata_code="GUC",
+        geojson_id=9,
         abbreviations=Abbreviations(
             three_letter="GUC",
             five_letter="GUC",
@@ -122,6 +181,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     MONTROSE = Airport(
         name="Montrose Regional Airport",
         iata_code="MTJ",
+        geojson_id=12,
         abbreviations=Abbreviations(
             three_letter="MTJ",
             five_letter="MTJ",
@@ -134,6 +194,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     NORTHERN_COLORADO = Airport(
         name="Northern Colorado Regional Airport",
         iata_code="FNL",
+        geojson_id=7,
         abbreviations=Abbreviations(
             three_letter="FNL",
             five_letter="FNL",
@@ -146,6 +207,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     PUEBLO = Airport(
         name="Pueblo Memorial Airport",
         iata_code="PUB",
+        geojson_id=13,
         abbreviations=Abbreviations(
             three_letter="PUB",
             five_letter="PUB",
@@ -158,6 +220,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     SAN_LUIS_VALLEY = Airport(
         name="San Luis Valley Regional/Bergman Field",
         iata_code="ALS",
+        geojson_id=0,
         abbreviations=Abbreviations(
             three_letter="ALS",
             five_letter="ALS",
@@ -170,6 +233,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     SOUTHEAST_COLORADO = Airport(
         name="Southeast Colorado Regional Airport",
         iata_code="LAA",
+        geojson_id=11,
         abbreviations=Abbreviations(
             three_letter="LAA",
             five_letter="LAA",
@@ -182,6 +246,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     STERLING = Airport(
         name="Sterling Municipal Airport",
         iata_code="STK",
+        geojson_id=14,
         abbreviations=Abbreviations(
             three_letter="STK",
             five_letter="STK",
@@ -194,6 +259,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     TELLURIDE = Airport(
         name="Telluride Regional Airport",
         iata_code="TEX",
+        geojson_id=15,
         abbreviations=Abbreviations(
             three_letter="TEX",
             five_letter="TEX",
@@ -206,6 +272,7 @@ class Airports(WithNameEnum, WithAbbreviationsEnum, WithCoordinatesEnum):
     YAMPA_VALLEY = Airport(
         name="Yampa Valley Airport",
         iata_code="HDN",
+        geojson_id=10,
         abbreviations=Abbreviations(
             three_letter="HDN",
             five_letter="HDN",
