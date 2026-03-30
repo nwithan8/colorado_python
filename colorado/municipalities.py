@@ -295,7 +295,7 @@ class Municipalities(PopulatedPlaceEnum):
         name="Boulder",
         abbreviations=Abbreviations(
             three_letter="BDL",
-            five_letter="BOULR",
+            five_letter="BLDR",
             seven_letter="BOULDER",
             fourteen_letter="BOULDER"
         ),
