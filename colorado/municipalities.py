@@ -294,8 +294,8 @@ class Municipalities(PopulatedPlaceEnum):
     BOULDER = Municipality(
         name="Boulder",
         abbreviations=Abbreviations(
-            three_letter="BDL",
-            five_letter="BOULR",
+            three_letter="BLD",
+            five_letter="BLDR",
             seven_letter="BOULDER",
             fourteen_letter="BOULDER"
         ),
